@@ -85,11 +85,12 @@ def load_library(name):
     locations, as a fallback for systems where ``find_library`` does not work
     (such as iOS).
     """
-
+    print("Looking for library", name)
     path = util.find_library(name)
     if path is not None:
+        print("Found", path)
         return CDLL(path)
-
+    print("Not found, searching...")
     # On iOS (and probably also watchOS and tvOS), ctypes.util.find_library
     # doesn't work and always returns None. This is because the sandbox hides
     # all system libraries from the filesystem and pretends they don't exist.
@@ -98,13 +99,19 @@ def load_library(name):
 
     for loc in _lib_path:
         try:
-            return CDLL(os.path.join(loc, "lib" + name + ".dylib"))
+            _path = os.path.join(loc, "lib" + name + ".dylib")
+            ret =  CDLL(_path)
+            print("Found path while searching", _path)
+            return ret
         except OSError:
             pass
 
     for loc in _framework_path:
         try:
-            return CDLL(os.path.join(loc, name + ".framework", name))
+            _path = os.path.join(loc, name + ".framework", name)
+            ret = CDLL(_path)
+            print("Found path while searching framework", _path)
+            return ret
         except OSError:
             pass
 
